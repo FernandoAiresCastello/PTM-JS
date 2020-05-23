@@ -4,13 +4,17 @@
     Programmable Tile Machine
     2020 Developed by Fernando Aires Castello
 
-    display.js
+    ptm.js
 
 =============================================================================*/
-class Display {
-    Gfx = null;
+class PTM {
+    Display = null;
 
     constructor() {
-        this.Gfx = new GraphicsDriver();
+        PTM.Log('Programmable Tile Machine started');
+        this.Display = new Display();
+    }
+    static Log(message) {
+        console.log('PTM >> ' + message);
     }
 }

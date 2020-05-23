@@ -4,13 +4,13 @@
     Programmable Tile Machine
     2020 Developed by Fernando Aires Castello
 
-    display.js
+    color.js
 
 =============================================================================*/
-class Display {
-    Gfx = null;
-
-    constructor() {
-        this.Gfx = new GraphicsDriver();
+class Color {
+    RGB = null;
+    
+    constructor(rgb) {
+        this.RGB = '#' + rgb.toString(16).padStart(6, '0');
     }
 }

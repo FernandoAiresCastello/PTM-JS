@@ -4,13 +4,12 @@
     Programmable Tile Machine
     2020 Developed by Fernando Aires Castello
 
-    display.js
+    grid-cell.js
 
 =============================================================================*/
-class Display {
-    Gfx = null;
+class GridCell {
+    Object = null;
 
     constructor() {
-        this.Gfx = new GraphicsDriver();
     }
 }
