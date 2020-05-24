@@ -14,7 +14,33 @@ class PTM {
         PTM.Log('Programmable Tile Machine started');
         this.Display = new Display();
     }
-    static Log(message) {
-        console.log('PTM >> ' + message);
+
+    static Log(obj) {
+        let output = '';
+        if (typeof obj === 'object') {
+            output = JSON.stringify(obj);
+        }
+        else { 
+            output = obj.toString();
+        }
+        console.log('PTM >> ' + output);
+    }
+
+    Run() {
+        PTM.Log('Main loop started');
+        this.Display.StartRendering();
+    }
+
+    Stop() {
+        PTM.Log('Main loop stopped');
+        this.Display.StopRendering();
+    }
+
+    DumpPalette() {
+        PTM.Log(this.Display.Gfx.Palette)
+    }
+
+    DumpTileset() {
+        PTM.Log(this.Display.Gfx.Tileset)
     }
 }

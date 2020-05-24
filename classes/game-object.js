@@ -11,10 +11,10 @@ class GameObject {
     Id = null;
     Tiles = [];
     Visible = true;
-    Properties = {};
+    Properties = new Map();
 
     constructor(tile) {
-        if (!tile)
+        if (tile == null)
             throw new Error('GameObject must contain at least one tile');
 
         this.Id = Util.GenerateId();

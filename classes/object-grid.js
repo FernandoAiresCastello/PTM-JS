@@ -8,46 +8,33 @@
 
 =============================================================================*/
 class ObjectGrid {
-    Cells = [];
+    Layers = [];
     Cols = null;
     Rows = null;
-    Size = null;
 
-    constructor(cols, rows) {
-        this.InitCells(cols, rows);
+    constructor(layers, cols, rows) {
+        if (layers == null || cols == null || rows == null)
+            throw new Error('ObjectGrid constructor requires 3 arguments');
+
+        this.InitLayers(layers, cols, rows);
     }
 
-    InitCells(cols, rows) {
+    InitLayers(layers, cols, rows) {
         this.Cols = cols;
         this.Rows = rows;
-        this.Size = cols * rows;
         
-        for (let i = 0; i < this.Size; i++) {
-            this.Cells.push(new GridCell());
+        for (let i = 0; i < layers; i++) {
+            this.Layers.push(new GridLayer(cols, rows));
         }
     }
 
     RemoveAllObjects() {
-        for (let y = 0; y < this.Rows; y++) {
-            for (let x = 0; x < this.Cols; x++) {
-                this.RemoveObject(x, y);
+        for (let z = 0; z < this.Layers.length; z++) {
+            for (let y = 0; y < this.Rows; y++) {
+                for (let x = 0; x < this.Cols; x++) {
+                    this.Layers[z].RemoveObject(x, y);
+                }
             }
         }
-    }
-
-    GetCell(x, y) {
-        return Cells[y * Cols + x];
-    }
-
-    GetObject(x, y) {
-        return this.GetCell(x, y).Object;
-    }
-
-    SetObject(o, x, y) {
-        this.GetCell(x, y).Object = o;
-    }
-
-    RemoveObject(x, y) {
-        this.SetObject(null, x, y);
     }
 }
