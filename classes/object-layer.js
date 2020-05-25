@@ -4,18 +4,19 @@
     Programmable Tile Machine
     2020 Developed by Fernando Aires Castello
 
-    grid-layer.js
+    object-layer.js
 
 =============================================================================*/
-class GridLayer {
+class ObjectLayer {
     Cells = [];
     Cols = null;
     Rows = null;
     Size = null;
+    Visible = true;
 
     constructor(cols, rows) {
         if (cols == null || rows == null)
-            throw new Error('GridLayer constructor requires 2 arguments');
+            throw new Error('ObjectLayer constructor requires 2 arguments');
 
         this.InitCells(cols, rows);
     }
@@ -26,7 +27,15 @@ class GridLayer {
         this.Size = cols * rows;
         
         for (let i = 0; i < this.Size; i++) {
-            this.Cells.push(new GridCell());
+            this.Cells.push(new ObjectCell());
+        }
+    }
+
+    Fill(o) {
+        for (let y = 0; y < this.Rows; y++) {
+            for (let x = 0; x < this.Cols; x++) {
+                this.SetObject(o, x, y);
+            }
         }
     }
 
@@ -38,8 +47,21 @@ class GridLayer {
         }
     }
 
+    IsWithinBounds(x, y) {
+        return x >= 0 && y >= 0 && x < this.Cols && y < this.Rows;
+    }
+
+    IsOutOfBounds(x, y) {
+        return !this.IsWithinBounds(x, y);
+    }
+
     GetCell(x, y) {
-        return Cells[y * Cols + x];
+        if (x == null || y == null)
+            throw new Error('GetCell requires 2 arguments');
+        if (this.IsOutOfBounds(x, y))
+            throw new Error(`Object cell X${x} Y${y} is out of bounds`);
+
+        return this.Cells[y * this.Cols + x];
     }
 
     GetObject(x, y) {
@@ -47,7 +69,9 @@ class GridLayer {
     }
 
     SetObject(o, x, y) {
-        this.GetCell(x, y).Object = o;
+        const cell = this.GetCell(x, y);
+        const replacementObject = o ? o.Copy() : null;
+        cell.Object = replacementObject;
     }
 
     RemoveObject(x, y) {

@@ -4,11 +4,10 @@
     Programmable Tile Machine
     2020 Developed by Fernando Aires Castello
 
-    grid-cell.js
+    machine-api.js
 
 =============================================================================*/
-class GridCell {
-    Object = null;
+class MachineApi {
 
     constructor() {
     }

@@ -9,6 +9,7 @@
 =============================================================================*/
 class GraphicsDriver {
     Canvas = null;
+    CanvasOverlay = null;
     Tileset = null;
     Palette = null;
     BackColor = 0;
@@ -39,21 +40,25 @@ class GraphicsDriver {
         const canvasElement = document.getElementsByTagName('canvas')[0];
         canvasElement.width = this.CanvasWidth;
         canvasElement.height = this.CanvasHeight;
-        canvasElement.addEventListener('click', (e) => {
-            this.CanvasClicked(e.layerX, e.layerY);
-        });
+        this.CanvasOverlay = $('#canvas-overlay');
+        this.CanvasOverlay.css('width', this.CanvasWidth);
+        this.CanvasOverlay.css('height', this.CanvasHeight);
         this.Canvas = canvasElement.getContext('2d'); 
         this.Canvas.imageSmoothingEnabled = false;
-        this.ClearToBackground();
+        this.ClearBackground();
     }
 
-    CanvasClicked(x, y) {
-        PTM.Log(`Graphics driver reports click @${x},${y}`);
-    }
-
-    ClearToBackground() {
+    ClearBackground() {
         this.Canvas.fillStyle = this.Palette.Colors[this.BackColor].RGB;
         this.Canvas.fillRect(0, 0, this.CanvasWidth, this.CanvasHeight);
+    }
+
+    SetOverlayCss(prop, value) {
+        this.CanvasOverlay.css(prop, value);
+    }
+
+    SetOverlayHtml(html) {
+        this.CanvasOverlay.html(html);
     }
 
     RenderPixel(color, x, y) {
@@ -79,11 +84,22 @@ class GraphicsDriver {
         }
     }
 
-    RenderTile(tileIndex, fgc, bgc, x, y) {
-        if (!Number.isInteger(tileIndex))
-            tileIndex = tileIndex.charCodeAt(0);
+    RenderTile(tileIndexOrChar, fgc, bgc, x, y) {
+        if (tileIndexOrChar == null) {
+            throw new Error('tileIndexOrChar is null');
+        }
+        
+        let pixelBlock = null;
+        if (Number.isInteger(tileIndexOrChar)) {
+            pixelBlock = this.Tileset.Tiles[tileIndexOrChar];
+        }
+        else if (tileIndexOrChar.charCodeAt && tileIndexOrChar.length == 1) {
+            pixelBlock = this.Tileset.Tiles[tileIndexOrChar.charCodeAt(0)]
+        }
+        else {
+            throw new Error('tileIndexOrChar must be an integer or a single character string');
+        }
 
-        const pixelBlock = this.Tileset.Tiles[tileIndex];
         this.RenderPixelBlock(pixelBlock, fgc, bgc, x, y);
     }
 }

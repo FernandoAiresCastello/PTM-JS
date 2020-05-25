@@ -20,4 +20,8 @@ class Tile {
         this.ForeColor = fgc;
         this.BackColor = bgc;
     }
+
+    Copy() {
+        return new Tile(this.Index, this.ForeColor, this.BackColor);
+    }
 }

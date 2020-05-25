@@ -4,14 +4,12 @@
     Programmable Tile Machine
     2020 Developed by Fernando Aires Castello
 
-    main.js
+    object-cell.js
 
 =============================================================================*/
-$(document).ready(() => Main());
+class ObjectCell {
+    Object = null;
 
-let PTM;
-
-function Main() {
-    PTM = new Machine();
-    new Test().Run();
+    constructor() {
+    }
 }

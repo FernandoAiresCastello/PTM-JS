@@ -4,17 +4,17 @@
     Programmable Tile Machine
     2020 Developed by Fernando Aires Castello
 
-    object-grid.js
+    object-map.js
 
 =============================================================================*/
-class ObjectGrid {
+class ObjectMap {
     Layers = [];
     Cols = null;
     Rows = null;
 
     constructor(layers, cols, rows) {
         if (layers == null || cols == null || rows == null)
-            throw new Error('ObjectGrid constructor requires 3 arguments');
+            throw new Error('ObjectMap constructor requires 3 arguments');
 
         this.InitLayers(layers, cols, rows);
     }
@@ -24,7 +24,7 @@ class ObjectGrid {
         this.Rows = rows;
         
         for (let i = 0; i < layers; i++) {
-            this.Layers.push(new GridLayer(cols, rows));
+            this.Layers.push(new ObjectLayer(cols, rows));
         }
     }
 
