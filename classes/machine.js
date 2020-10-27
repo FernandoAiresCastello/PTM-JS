@@ -8,12 +8,14 @@
 
 =============================================================================*/
 class Machine {
-    Display = null;
     Running = false;
+    Display = null;
+    Api = null;
 
     constructor() {
         Machine.Info('Machine instance created');
         this.Display = new Display(this);
+        this.Api = new MachineApi();
     }
 
     Reset() {

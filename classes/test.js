@@ -12,7 +12,7 @@ class Test {
     constructor() {
     }
 
-    Run() {
+    Test01() {
         PTM.Display.MapViews = [];
         PTM.Display.ClearBackground(50);
 
@@ -40,7 +40,5 @@ class Test {
         layer1.SetObject(obj2, objectMap.Cols-1, objectMap.Rows-1);
         layer1.SetObject(obj2, objectMap.Cols-1, objectMap.Rows-2);
         layer1.SetObject(obj2, objectMap.Cols-2, objectMap.Rows-1);
-
-        PTM.Run();
     }
 }
