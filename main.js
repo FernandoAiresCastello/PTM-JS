@@ -1,7 +1,5 @@
 
 function Main() {
-    const machine = new Machine();
-    window.ptm = machine.Api;
-
-    
+    window.test = new Test();
+    window.test.Test01();
 }
