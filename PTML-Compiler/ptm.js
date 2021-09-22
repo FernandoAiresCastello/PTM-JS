@@ -35,6 +35,48 @@ class Random {
     }
 }
 /*===========================================================================*/
+class Stack {
+    constructor() {
+        this.data = [];
+        this.top = 0;
+    }
+    push(element) {
+        this.data[this.top] = element;
+        this.top = this.top + 1;
+    }
+    length() {
+        return this.top;
+    }
+    peek() {
+        return this.data[this.top - 1];
+    }
+    isEmpty() {
+        return this.top === 0;
+    }
+    pop() {
+        if (this.isEmpty() === false) {
+            this.top = this.top - 1;
+            return this.data.pop(); // removes the last element
+        }
+    }
+    print() {
+        var top = this.top - 1; // because top points to index where new    element to be inserted
+        while (top >= 0) { // print upto 0th index
+            console.log(this.data[top]);
+            top--;
+        }
+    }
+    reverse() {
+        this._reverse(this.top - 1);
+    }
+    _reverse(index) {
+        if (index != 0) {
+            this._reverse(index - 1);
+        }
+        console.log(this.data[index]);
+    }
+}
+/*===========================================================================*/
 class PixelBlock {
     Width = 8;
     Height = 8;
@@ -240,9 +282,13 @@ class Palette {
     }
 
     InitDefault() {
+        let i = 0;
         this.Clear();
-        this.Set(0, 0x000000);
-        this.Set(1, 0xffffff);
+        this.Set(i++, 0x000000);
+        this.Set(i++, 0xffffff);
+        this.Set(i++, 0xff0000);
+        this.Set(i++, 0x00ff00);
+        this.Set(i++, 0x0000ff);
     }
 }
 /*===========================================================================*/
@@ -700,6 +746,7 @@ class ProgramLine {
 /*===========================================================================*/
 class Program {
     Lines = [];
+    Labels = {};
     ExecPtr = 0;
     CurrentLine = null;
     Running = false;
@@ -715,6 +762,10 @@ class Program {
     AddLine(srcln, command, params) {
         this.Lines.push(new ProgramLine(srcln, this.Lines.length, command, params));
     }
+
+    AddLabel(id, lineIndex) {
+        this.Labels[id] = lineIndex;
+    }
 }
 /*===========================================================================*/
 class Machine {
@@ -724,11 +775,13 @@ class Machine {
     CycleHandle = null;
     Cycles = 0;
     Branching = false;
+    CallStack = null;
 
     constructor() {
         this.Info('Machine instance created');
         this.Display = new Display(this);
         this.Program = new Program();
+        this.CallStack = new Stack();
     }
 
     Info(msg) {
@@ -793,14 +846,8 @@ class Machine {
         this.Branching = true;
     }
 
-    Stop(error) {
+    Stop() {
         this.Running = false;
-        if (error) {
-            this.Error('Main loop stopped abnormally due to:\n' + error.message + '\n' + error.stack);
-        }
-        else {
-            this.Info('Main loop stopped normally');
-        }
         this.Display.StopRendering();
         this.Program.Stop();
     }
@@ -855,9 +902,6 @@ function Sys_DebugPrint(text, color) {
         return;
     }
 
-    if (Array.isArray(text))
-        text = text[0];
-
     debugPanel.innerHTML = `<span style="color:${color}">${text}</span>`;
 }
 
@@ -865,6 +909,35 @@ function Sys_Error(text) {
     const msg = `ERROR: ${text}`;
     console.error(msg);
     Sys_DebugPrint(msg, '#f00');
+    ptm.Stop();
+}
+
+function Sys_Goto(idLabel) {
+    const label = prg.Labels[idLabel];
+    if (label === undefined || label === null) {
+        Sys_Error("Undefined label: " + idLabel);
+        return;
+    }
+
+    prg.ExecPtr = label;
+    ptm.Branching = true;
+}
+
+function Sys_Call(idLabel) {
+    const label = prg.Labels[idLabel];
+    if (label === undefined || label === null) {
+        Sys_Error("Undefined label: " + idLabel);
+        return;
+    }
+
+    ptm.CallStack.push(prg.ExecPtr + 1);
+    prg.ExecPtr = label;
+    ptm.Branching = true;
+}
+
+function Sys_Return() {
+    prg.ExecPtr = ptm.CallStack.pop();
+    ptm.Branching = true;
 }
 
 function Sys_AssertPaletteIndex(ixPalette) {
@@ -926,10 +999,25 @@ function Sys_InitCommandMap() {
         ptm.Info("Program restarted");
     }
     cmd['DEBUG'] = function (params) {
-        Sys_DebugPrint(params, '#fff');
+        Sys_DebugPrint(params[0], '#fff');
     }
     cmd['TITLE'] = function (params) {
-        Sys_SetTitle(params);
+        Sys_SetTitle(params[0]);
+    }
+    cmd['BGCOLOR'] = function (params) {
+        Sys_Display_SetBackColor(params[0]);
+    }
+    cmd['CLS'] = function (params) {
+        Sys_Display_ClearBackground();
+    }
+    cmd['GOTO'] = function (params) {
+        Sys_Goto(params[0]);
+    }
+    cmd['CALL'] = function (params) {
+        Sys_Call(params[0]);
+    }
+    cmd['RET'] = function (params) {
+        Sys_Return();
     }
 }
 

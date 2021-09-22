@@ -40,6 +40,7 @@ namespace PTML_Editor
             ToolBar.Visible = false;
 
             TxtSource.BackColor = Color.FromArgb(0, 0, 80);
+            SrcPanel.BackColor = TxtSource.BackColor;
             TxtSource.ForeColor = Color.FromArgb(240, 240, 0);
 
             CustomFont = LoadFontFromFile("../../../Fonts/Px437_IBM_VGA8.ttf");

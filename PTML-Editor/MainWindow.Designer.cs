@@ -46,14 +46,16 @@
             this.panel1 = new System.Windows.Forms.Panel();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.TxtOutput = new System.Windows.Forms.TextBox();
-            this.TxtSource = new System.Windows.Forms.TextBox();
             this.ToolBar = new System.Windows.Forms.ToolStrip();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.MiOpenGenerated = new System.Windows.Forms.ToolStripMenuItem();
             this.MiClearLog = new System.Windows.Forms.ToolStripMenuItem();
+            this.SrcPanel = new System.Windows.Forms.Panel();
+            this.TxtSource = new System.Windows.Forms.TextBox();
             this.menuStrip1.SuspendLayout();
             this.panel1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
+            this.SrcPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -189,7 +191,7 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 98F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 1F));
             this.tableLayoutPanel1.Controls.Add(this.TxtOutput, 1, 1);
-            this.tableLayoutPanel1.Controls.Add(this.TxtSource, 1, 0);
+            this.tableLayoutPanel1.Controls.Add(this.SrcPanel, 1, 0);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 25);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -215,24 +217,6 @@
             this.TxtOutput.TabStop = false;
             this.TxtOutput.Text = "Log";
             this.TxtOutput.WordWrap = false;
-            // 
-            // TxtSource
-            // 
-            this.TxtSource.AcceptsReturn = true;
-            this.TxtSource.AcceptsTab = true;
-            this.TxtSource.BackColor = System.Drawing.Color.White;
-            this.TxtSource.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.TxtSource.Font = new System.Drawing.Font("Input", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.TxtSource.ForeColor = System.Drawing.Color.Black;
-            this.TxtSource.Location = new System.Drawing.Point(9, 3);
-            this.TxtSource.Multiline = true;
-            this.TxtSource.Name = "TxtSource";
-            this.TxtSource.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.TxtSource.Size = new System.Drawing.Size(605, 290);
-            this.TxtSource.TabIndex = 0;
-            this.TxtSource.Text = "Source code";
-            this.TxtSource.WordWrap = false;
-            this.TxtSource.KeyDown += new System.Windows.Forms.KeyEventHandler(this.TxtSource_KeyDown);
             // 
             // ToolBar
             // 
@@ -261,6 +245,35 @@
             this.MiClearLog.Text = "Clear log";
             this.MiClearLog.Click += new System.EventHandler(this.MiClearLog_Click);
             // 
+            // SrcPanel
+            // 
+            this.SrcPanel.Controls.Add(this.TxtSource);
+            this.SrcPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.SrcPanel.Location = new System.Drawing.Point(9, 3);
+            this.SrcPanel.Name = "SrcPanel";
+            this.SrcPanel.Padding = new System.Windows.Forms.Padding(15);
+            this.SrcPanel.Size = new System.Drawing.Size(605, 290);
+            this.SrcPanel.TabIndex = 2;
+            // 
+            // TxtSource
+            // 
+            this.TxtSource.AcceptsReturn = true;
+            this.TxtSource.AcceptsTab = true;
+            this.TxtSource.BackColor = System.Drawing.Color.White;
+            this.TxtSource.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.TxtSource.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.TxtSource.Font = new System.Drawing.Font("Input", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.TxtSource.ForeColor = System.Drawing.Color.Black;
+            this.TxtSource.Location = new System.Drawing.Point(15, 15);
+            this.TxtSource.Multiline = true;
+            this.TxtSource.Name = "TxtSource";
+            this.TxtSource.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.TxtSource.Size = new System.Drawing.Size(575, 260);
+            this.TxtSource.TabIndex = 1;
+            this.TxtSource.Text = "Source code";
+            this.TxtSource.WordWrap = false;
+            this.TxtSource.KeyDown += new System.Windows.Forms.KeyEventHandler(this.TxtSource_KeyDown);
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -280,6 +293,8 @@
             this.panel1.PerformLayout();
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
+            this.SrcPanel.ResumeLayout(false);
+            this.SrcPanel.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -303,12 +318,13 @@
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.TextBox TxtOutput;
-        private System.Windows.Forms.TextBox TxtSource;
         private System.Windows.Forms.ToolStrip ToolBar;
         private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem MiOpenGenerated;
         private System.Windows.Forms.ToolStripMenuItem MiClearLog;
+        private System.Windows.Forms.Panel SrcPanel;
+        private System.Windows.Forms.TextBox TxtSource;
     }
 }
 

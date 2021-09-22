@@ -61,13 +61,21 @@ namespace PTMLCompiler
                     param = new string[0];
                 }
 
-                for (int pi = 0; pi < param.Length; pi++)
-                    param[pi] = string.Format("'{0}'", param[pi]);
+                if (cmd.EndsWith(":"))
+                {
+                    Output.Add(string.Format("\tprg.AddLabel('{0}', prg.Lines.length);", 
+                        cmd.Substring(0, cmd.Length - 1)));
+                }
+                else
+                {
+                    for (int pi = 0; pi < param.Length; pi++)
+                        param[pi] = string.Format("'{0}'", param[pi]);
 
-                string paramList = string.Join(", ", param);
+                    string paramList = string.Join(", ", param);
 
-                Output.Add(string.Format("\t\tprg.AddLine({0}, '{1}', [{2}]);", 
-                    CurLine.LineNr, cmd, paramList));
+                    Output.Add(string.Format("\tprg.AddLine({0}, '{1}', [{2}]);",
+                        CurLine.LineNr, cmd, paramList));
+                }
             }
 
             string compiledCode = string.Join(Environment.NewLine, Output.ToArray());
