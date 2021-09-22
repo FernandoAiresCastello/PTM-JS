@@ -12,6 +12,10 @@ String.prototype.replaceAt = function (index, replacement) {
 
 /*===========================================================================*/
 
+const PTM_LOG_PREFIX = 'PTM >> ';
+
+/*===========================================================================*/
+
 class Util {
 
     static ByteToBinaryString(value) {
@@ -732,15 +736,15 @@ class Machine {
         else {
             output = obj.toString();
         }
-        console.log('PTM >> ' + output);
+        console.log(PTM_LOG_PREFIX + output);
     }
 
     static Error(error) {
-        console.error('PTM >> ' + error);
+        console.error(PTM_LOG_PREFIX + error);
     }
 
     static Warning(msg) {
-        console.warn('PTM >> ' + msg);
+        console.warn(PTM_LOG_PREFIX + msg);
     }
 
     Run() {
@@ -807,8 +811,8 @@ function Sys_AssertCharsetIndex(ixCharset) {
 
 /*==========================[ PUBLIC API ]===================================*/
 
-function Api_Log(text) {
-    console.log(text);
+function Api_Debug(text) {
+    console.log(PTM_LOG_PREFIX + text);
 }
 
 function Api_Palette_Set(ixPalette, rgb) {

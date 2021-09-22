@@ -59,7 +59,7 @@ namespace PTMLCompiler
         {
             string code = CurLine.Code;
             string commandName = null;
-            string[] parameters = null;
+            string[] parameters = new string[0];
 
             int firstIndexOfSpace = code.IndexOf(' ');
 
@@ -75,7 +75,6 @@ namespace PTMLCompiler
             else
             {
                 commandName = code;
-                parameters = null;
             }
 
             commandName = commandName.ToUpper();
@@ -92,13 +91,23 @@ namespace PTMLCompiler
             return string.Format("\'{0}\'", text);
         }
 
+        private void AssertParamCount(string[] param, int count)
+        {
+            if (param == null)
+                param = new string[0];
+
+            if (param.Length != count)
+                throw new CompilerException(string.Format(
+                    "Expected {0} args, got {1}", count, param.Length), CurLine);
+        }
+
         private string CompileCommand(string name, string[] param)
         {
             string cmd = null;
 
             switch (name)
             {
-                case "LOG": cmd = CmdLog(param); break;
+                case "DEBUG": cmd = CmdDebug(param); break;
                 case "FN": cmd = CmdFunction(param); break;
                 case FunctionBodyStart: cmd = CmdFunctionBodyStart(); break;
                 case FunctionBodyEnd: cmd = CmdFunctionBodyEnd(); break;
@@ -124,6 +133,8 @@ namespace PTMLCompiler
 
         private string CmdSetVar(string[] param)
         {
+            AssertParamCount(param, 2);
+
             if (param[0][0] != '$')
                 throw new CompilerException("Variable identifier must start with '$'", CurLine);
 
@@ -135,6 +146,8 @@ namespace PTMLCompiler
 
         private string CmdPutChar(string[] param)
         {
+            AssertParamCount(param, 5);
+
             int ch = ParseChar(param[2]);
 
             return string.Format("Api_PutChar({0}, {1}, {2}, {3}, {4});", 
@@ -195,26 +208,31 @@ namespace PTMLCompiler
 
         private string CmdSetCharset(string[] param)
         {
+            AssertParamCount(param, 3);
             return string.Format("Api_Charset_Set({0}, {1}, {2});", param[0], param[1], param[2]);
         }
 
         private string CmdSetBackColor(string[] param)
         {
+            AssertParamCount(param, 1);
             return string.Format("Api_Display_SetBackColor({0});", param[0]);
         }
 
         private string CmdClearScreen(string[] param)
         {
+            AssertParamCount(param, 0);
             return "Api_Display_ClearBackground();";
         }
 
-        private string CmdLog(string[] param)
+        private string CmdDebug(string[] param)
         {
-            return string.Format("Api_Log({0});", param[0]);
+            AssertParamCount(param, 1);
+            return string.Format("Api_Debug({0});", param[0]);
         }
 
         private string CmdFunction(string[] param)
         {
+            AssertParamCount(param, 1);
             return string.Format("function {0}()", param[0]);
         }
 
@@ -232,6 +250,7 @@ namespace PTMLCompiler
 
         private string CmdCall(string[] param)
         {
+            AssertParamCount(param, 1);
             return string.Format("{0}();", param[0]);
         }
     }

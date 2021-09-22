@@ -31,24 +31,26 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWindow));
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.MiFileNew = new System.Windows.Forms.ToolStripMenuItem();
             this.MiFileOpen = new System.Windows.Forms.ToolStripMenuItem();
             this.MiFileSave = new System.Windows.Forms.ToolStripMenuItem();
-            this.MiExit = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.MiExit = new System.Windows.Forms.ToolStripMenuItem();
             this.buildRunToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.MiProgCompileRun = new System.Windows.Forms.ToolStripMenuItem();
             this.MiProgCompile = new System.Windows.Forms.ToolStripMenuItem();
             this.MiProgRun = new System.Windows.Forms.ToolStripMenuItem();
+            this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MiAbout = new System.Windows.Forms.ToolStripMenuItem();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.ToolBar = new System.Windows.Forms.ToolStrip();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.TxtOutput = new System.Windows.Forms.TextBox();
             this.TxtSource = new System.Windows.Forms.TextBox();
-            this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolBar = new System.Windows.Forms.ToolStrip();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.MiOpenGenerated = new System.Windows.Forms.ToolStripMenuItem();
+            this.MiClearLog = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.panel1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -79,20 +81,13 @@
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
             // 
-            // statusStrip1
-            // 
-            this.statusStrip1.Location = new System.Drawing.Point(0, 420);
-            this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(624, 22);
-            this.statusStrip1.TabIndex = 1;
-            this.statusStrip1.Text = "s";
-            // 
             // MiFileNew
             // 
             this.MiFileNew.Name = "MiFileNew";
             this.MiFileNew.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
             this.MiFileNew.Size = new System.Drawing.Size(180, 22);
             this.MiFileNew.Text = "New";
+            this.MiFileNew.Click += new System.EventHandler(this.MiFileNew_Click);
             // 
             // MiFileOpen
             // 
@@ -110,47 +105,50 @@
             this.MiFileSave.Text = "Save";
             this.MiFileSave.Click += new System.EventHandler(this.MiFileSave_Click);
             // 
-            // MiExit
-            // 
-            this.MiExit.Name = "MiExit";
-            this.MiExit.Size = new System.Drawing.Size(180, 22);
-            this.MiExit.Text = "Exit";
-            // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
             this.toolStripSeparator1.Size = new System.Drawing.Size(177, 6);
             // 
+            // MiExit
+            // 
+            this.MiExit.Name = "MiExit";
+            this.MiExit.Size = new System.Drawing.Size(180, 22);
+            this.MiExit.Text = "Exit";
+            this.MiExit.Click += new System.EventHandler(this.MiExit_Click);
+            // 
             // buildRunToolStripMenuItem
             // 
             this.buildRunToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MiProgCompile,
-            this.MiProgCompileRun,
-            this.MiProgRun});
+            this.MiProgRun,
+            this.toolStripSeparator2,
+            this.MiOpenGenerated});
             this.buildRunToolStripMenuItem.Name = "buildRunToolStripMenuItem";
             this.buildRunToolStripMenuItem.Size = new System.Drawing.Size(65, 20);
             this.buildRunToolStripMenuItem.Text = "Program";
             // 
-            // MiProgCompileRun
-            // 
-            this.MiProgCompileRun.Name = "MiProgCompileRun";
-            this.MiProgCompileRun.Size = new System.Drawing.Size(180, 22);
-            this.MiProgCompileRun.Text = "Compile and Run";
-            this.MiProgCompileRun.Click += new System.EventHandler(this.MiProgCompileRun_Click);
-            // 
             // MiProgCompile
             // 
             this.MiProgCompile.Name = "MiProgCompile";
-            this.MiProgCompile.Size = new System.Drawing.Size(180, 22);
+            this.MiProgCompile.Size = new System.Drawing.Size(189, 22);
             this.MiProgCompile.Text = "Compile";
             this.MiProgCompile.Click += new System.EventHandler(this.MiProgCompile_Click);
             // 
             // MiProgRun
             // 
             this.MiProgRun.Name = "MiProgRun";
-            this.MiProgRun.Size = new System.Drawing.Size(180, 22);
+            this.MiProgRun.Size = new System.Drawing.Size(189, 22);
             this.MiProgRun.Text = "Run";
             this.MiProgRun.Click += new System.EventHandler(this.MiProgRun_Click);
+            // 
+            // optionsToolStripMenuItem
+            // 
+            this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MiClearLog});
+            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
+            this.optionsToolStripMenuItem.Text = "Options";
             // 
             // helpToolStripMenuItem
             // 
@@ -163,8 +161,16 @@
             // MiAbout
             // 
             this.MiAbout.Name = "MiAbout";
-            this.MiAbout.Size = new System.Drawing.Size(180, 22);
+            this.MiAbout.Size = new System.Drawing.Size(107, 22);
             this.MiAbout.Text = "About";
+            // 
+            // statusStrip1
+            // 
+            this.statusStrip1.Location = new System.Drawing.Point(0, 420);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(624, 22);
+            this.statusStrip1.TabIndex = 1;
+            this.statusStrip1.Text = "s";
             // 
             // panel1
             // 
@@ -175,14 +181,6 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(624, 396);
             this.panel1.TabIndex = 2;
-            // 
-            // ToolBar
-            // 
-            this.ToolBar.Location = new System.Drawing.Point(0, 0);
-            this.ToolBar.Name = "ToolBar";
-            this.ToolBar.Size = new System.Drawing.Size(624, 25);
-            this.ToolBar.TabIndex = 0;
-            this.ToolBar.Text = "toolStrip1";
             // 
             // tableLayoutPanel1
             // 
@@ -236,11 +234,32 @@
             this.TxtSource.WordWrap = false;
             this.TxtSource.KeyDown += new System.Windows.Forms.KeyEventHandler(this.TxtSource_KeyDown);
             // 
-            // optionsToolStripMenuItem
+            // ToolBar
             // 
-            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
-            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
-            this.optionsToolStripMenuItem.Text = "Options";
+            this.ToolBar.Location = new System.Drawing.Point(0, 0);
+            this.ToolBar.Name = "ToolBar";
+            this.ToolBar.Size = new System.Drawing.Size(624, 25);
+            this.ToolBar.TabIndex = 0;
+            this.ToolBar.Text = "toolStrip1";
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(186, 6);
+            // 
+            // MiOpenGenerated
+            // 
+            this.MiOpenGenerated.Name = "MiOpenGenerated";
+            this.MiOpenGenerated.Size = new System.Drawing.Size(189, 22);
+            this.MiOpenGenerated.Text = "View last generated JS";
+            this.MiOpenGenerated.Click += new System.EventHandler(this.MiOpenGenerated_Click);
+            // 
+            // MiClearLog
+            // 
+            this.MiClearLog.Name = "MiClearLog";
+            this.MiClearLog.Size = new System.Drawing.Size(180, 22);
+            this.MiClearLog.Text = "Clear log";
+            this.MiClearLog.Click += new System.EventHandler(this.MiClearLog_Click);
             // 
             // MainWindow
             // 
@@ -277,7 +296,6 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem MiExit;
         private System.Windows.Forms.ToolStripMenuItem buildRunToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem MiProgCompileRun;
         private System.Windows.Forms.ToolStripMenuItem MiProgCompile;
         private System.Windows.Forms.ToolStripMenuItem MiProgRun;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
@@ -288,6 +306,9 @@
         private System.Windows.Forms.TextBox TxtSource;
         private System.Windows.Forms.ToolStrip ToolBar;
         private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripMenuItem MiOpenGenerated;
+        private System.Windows.Forms.ToolStripMenuItem MiClearLog;
     }
 }
 
