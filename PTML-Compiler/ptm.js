@@ -5,26 +5,19 @@
         https://github.com/FernandoAiresCastello
     
 =============================================================================*/
-
 const PTM_LOG_PREFIX = '[PTM] ';
-
 /*===========================================================================*/
-
 String.prototype.replaceAt = function (index, replacement) {
     return this.substr(0, index) + replacement + this.substr(index + replacement.length);
 }
-
 /*===========================================================================*/
-
 class Util {
 
     static ByteToBinaryString(value) {
         return value.toString(2).padStart(8, '0');
     }
 }
-
 /*===========================================================================*/
-
 class Random {
 
     static Number(max) {
@@ -41,9 +34,7 @@ class Random {
         return id;
     }
 }
-
 /*===========================================================================*/
-
 class PixelBlock {
     Width = 8;
     Height = 8;
@@ -77,9 +68,7 @@ class PixelBlock {
         this.Set(0, 0, 0, 0, 0, 0, 0, 0);
     }
 }
-
 /*===========================================================================*/
-
 class Tileset {
     Tiles = [];
 
@@ -214,9 +203,7 @@ class Tileset {
         this.Set(i++, 0x70, 0x10, 0x10, 0x0c, 0x10, 0x10, 0x70, 0x00);
     }
 }
-
 /*===========================================================================*/
-
 class Color {
     RGB = null;
 
@@ -224,9 +211,7 @@ class Color {
         this.RGB = '#' + rgb.toString(16).padStart(6, '0');
     }
 }
-
 /*===========================================================================*/
-
 class Palette {
     Size = 256;
     Colors = [];
@@ -260,9 +245,7 @@ class Palette {
         this.Set(1, 0xffffff);
     }
 }
-
 /*===========================================================================*/
-
 class Tile {
     Index = 0;
     ForeColor = 0;
@@ -281,18 +264,17 @@ class Tile {
         return new Tile(this.Index, this.ForeColor, this.BackColor);
     }
 }
-
 /*===========================================================================*/
-
 class GraphicsDriver {
     Canvas = null;
-    Overlay = null;
+    DebugPanel = null;
+    TitlePanel = null;
     Tileset = null;
     Palette = null;
 
     ScreenWidth = 160;
     ScreenHeight = 144;
-    ScreenZoom = 4;
+    ScreenZoom = 3;
     BackColor = 0;
 
     TilePxCountX = 8;
@@ -315,7 +297,8 @@ class GraphicsDriver {
         this.Tileset = new Tileset();
         this.Palette = new Palette();
 
-        this.Overlay = document.getElementById('overlay');
+        this.DebugPanel = document.getElementById('debug-panel');
+        this.TitlePanel = document.getElementById('title-panel');
         const canvasElement = document.getElementsByTagName('canvas')[0];
         canvasElement.width = this.CanvasWidth;
         canvasElement.height = this.CanvasHeight;
@@ -371,9 +354,7 @@ class GraphicsDriver {
         this.RenderPixelBlock(pixelBlock, fgc, bgc, x, y);
     }
 }
-
 /*===========================================================================*/
-
 class Display {
     Machine = null;
     Gfx = null;
@@ -427,9 +408,7 @@ class Display {
         this.MapViews.push(view);
     }
 }
-
 /*===========================================================================*/
-
 class MapView {
     Display = null;
     ObjectMap = null;
@@ -543,9 +522,7 @@ class MapView {
         this.Height = height;
     }
 }
-
 /*===========================================================================*/
-
 class ObjectMap {
     Layers = [];
     Cols = null;
@@ -577,9 +554,7 @@ class ObjectMap {
         }
     }
 }
-
 /*===========================================================================*/
-
 class ObjectLayer {
     Cells = [];
     Cols = null;
@@ -651,18 +626,14 @@ class ObjectLayer {
         this.SetObject(null, x, y);
     }
 }
-
 /*===========================================================================*/
-
 class ObjectCell {
     Object = null;
 
     constructor() {
     }
 }
-
 /*===========================================================================*/
-
 class GameObject {
     Id = null;
     Tiles = [];
@@ -712,9 +683,7 @@ class GameObject {
         return this.Properties.get(prop);
     }
 }
-
 /*===========================================================================*/
-
 class ProgramLine {
     SourceLineNr = 0;
     ActualLineNr = 0;
@@ -728,9 +697,7 @@ class ProgramLine {
         this.Params = params;
     }
 }
-
 /*===========================================================================*/
-
 class Program {
     Lines = [];
     ExecPtr = 0;
@@ -749,9 +716,7 @@ class Program {
         this.Lines.push(new ProgramLine(srcln, this.Lines.length, command, params));
     }
 }
-
 /*===========================================================================*/
-
 class Machine {
     Running = false;
     Display = null;
@@ -807,8 +772,8 @@ class Machine {
             return;
         }
 
-        this.Cycles++;
         Sys_ExecuteLine(this.Program.Lines[this.Program.ExecPtr]);
+        this.Cycles++;
 
         if (this.Branching)
             this.Branching = false;
@@ -840,19 +805,23 @@ class Machine {
         this.Program.Stop();
     }
 }
-
 /*=======================[ SYSTEM FUNCTIONS ]=======================*/
 
 function Sys_Init() {
-    document.body.style.backgroundColor = '#000000';
     window.ptm = new Machine();
     window.display = ptm.Display;
     window.prg = ptm.Program;
     window.gfx = display.Gfx;
     window.tileset = gfx.Tileset;
     window.palette = gfx.Palette;
-    window.overlay = gfx.Overlay;
+    window.debugPanel = gfx.DebugPanel;
+    window.titlePanel = gfx.TitlePanel;
     window.cmd = {};
+    window.gfx.BackColor = 0;
+    window.gfx.ClearBackground();
+
+    Sys_SetTitle(null);
+    Sys_DebugPrint(null);
     Sys_InitCommandMap();
 }
 
@@ -871,14 +840,31 @@ function Sys_ExecuteLine(line) {
     }
 }
 
-function Sys_SetOverlay(text, fgc, bgc) {
-    overlay.innerHTML = `<div style="color:${fgc};background:${bgc};width:100%;text-align:center">${text}</span>`;
+function Sys_SetTitle(title) {
+    if (!title) {
+        titlePanel.innerHTML = '&nbsp;';
+    }
+    else {
+        titlePanel.innerHTML = title;
+    }
+}
+
+function Sys_DebugPrint(text, color) {
+    if (!text) {
+        debugPanel.innerHTML = '&nbsp;';
+        return;
+    }
+
+    if (Array.isArray(text))
+        text = text[0];
+
+    debugPanel.innerHTML = `<span style="color:${color}">${text}</span>`;
 }
 
 function Sys_Error(text) {
     const msg = `ERROR: ${text}`;
     console.error(msg);
-    Sys_SetOverlay(msg, '#fff', '#f00');
+    Sys_DebugPrint(msg, '#f00');
 }
 
 function Sys_AssertPaletteIndex(ixPalette) {
@@ -929,11 +915,7 @@ function Sys_PutChar(col, row, ixCh, ixPalFg, ixPalBg) {
 
 function Sys_InitCommandMap() {
 
-    cmd['TEST'] = function (params) {
-        ptm.Info("This is a test. Params = " + params);
-    }
     cmd['NOP'] = function (params) {
-        ptm.Info("NOP executed");
     }
     cmd['HALT'] = function (params) {
         prg.Stop();
@@ -944,7 +926,10 @@ function Sys_InitCommandMap() {
         ptm.Info("Program restarted");
     }
     cmd['DEBUG'] = function (params) {
-        Sys_SetOverlay(window.ptm.Cycles, '#fff', '#000');
+        Sys_DebugPrint(params, '#fff');
+    }
+    cmd['TITLE'] = function (params) {
+        Sys_SetTitle(params);
     }
 }
 

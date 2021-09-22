@@ -42,10 +42,18 @@ namespace PTMLCompiler
                 if (indexOfFirstSpace > 0)
                 {
                     cmd = CurLine.Code.Substring(0, indexOfFirstSpace).Trim();
+
                     if (CurLine.Code.Contains("\""))
-                        param = new string[] { CurLine.Code.Substring(indexOfFirstSpace).Trim() };
+                    {
+                        param = new string[]
+                        {
+                            CurLine.Code.Substring(indexOfFirstSpace).Trim().Replace("\"", "")
+                        };
+                    }
                     else
+                    {
                         param = CurLine.Code.Substring(indexOfFirstSpace).Trim().Split(' ');
+                    }
                 }
                 else
                 {

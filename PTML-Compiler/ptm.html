@@ -11,23 +11,36 @@
 [[[COMPILED_JS]]]
     </script>
     <style>
-        canvas, #overlay {
+        body {
+            background: #000;
+            color: #fff;
+            font-family: Consolas, monospace;
+            font-size: 12px;
+        }
+        table {
+            border: 0;
+            border-collapse: collapse;
             padding: 0;
             margin: auto;
-            display: block;
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            right: 0;
         }
         canvas {
-            border: 3px double #202020;
+            border: 1px solid #333;
+        }
+        #debug-panel, #title-panel {
+            border: 0;
+            padding: 0 5px;
+        }
+        #title-panel {
+            text-align: center;
+            margin-bottom: 3px;
         }
     </style>
 </head>
 <body>
-    <canvas width='0' height='0'></canvas>
-    <div id='overlay'></div>
+    <table>
+        <tr><td><div id='title-panel'></div></td></tr>
+        <tr><td><canvas width='0' height='0'></canvas></td></tr>
+        <tr><td><div id='debug-panel'></div></td></tr>
+    </table>
 </body>
 </html>
