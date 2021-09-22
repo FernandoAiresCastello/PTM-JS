@@ -17,7 +17,6 @@ namespace PTMLCompiler
         private List<SourceLine> Source;
         private List<string> Output;
         private SourceLine CurLine;
-        private int Identation = 0;
 
         public Compiler(string[] srcLines, string baseJs, string baseHtml)
         {
@@ -35,7 +34,32 @@ namespace PTMLCompiler
             for (int i = 0; i < Source.Count; i++)
             {
                 CurLine = Source[i];
-                CompileCurrentLine();
+
+                int indexOfFirstSpace = CurLine.Code.IndexOf(' ');
+                string cmd;
+                string[] param;
+
+                if (indexOfFirstSpace > 0)
+                {
+                    cmd = CurLine.Code.Substring(0, indexOfFirstSpace).Trim();
+                    if (CurLine.Code.Contains("\""))
+                        param = new string[] { CurLine.Code.Substring(indexOfFirstSpace).Trim() };
+                    else
+                        param = CurLine.Code.Substring(indexOfFirstSpace).Trim().Split(' ');
+                }
+                else
+                {
+                    cmd = CurLine.Code;
+                    param = new string[0];
+                }
+
+                for (int pi = 0; pi < param.Length; pi++)
+                    param[pi] = string.Format("'{0}'", param[pi]);
+
+                string paramList = string.Join(", ", param);
+
+                Output.Add(string.Format("\t\tprg.AddLine({0}, '{1}', [{2}]);", 
+                    CurLine.LineNr, cmd, paramList));
             }
 
             string compiledCode = string.Join(Environment.NewLine, Output.ToArray());
@@ -55,42 +79,6 @@ namespace PTMLCompiler
             return BaseHtml.Replace(OutputFilePlaceholder, js);
         }
 
-        private void CompileCurrentLine()
-        {
-            string code = CurLine.Code;
-            string commandName = null;
-            string[] parameters = new string[0];
-
-            int firstIndexOfSpace = code.IndexOf(' ');
-
-            if (firstIndexOfSpace > 0)
-            {
-                commandName = code.Substring(0, firstIndexOfSpace).Trim();
-                string rest = code.Substring(firstIndexOfSpace).Trim();
-                if (rest.Contains("\""))
-                    parameters = new string[] { rest };
-                else
-                    parameters = rest.Split(' ');
-            }
-            else
-            {
-                commandName = code;
-            }
-
-            commandName = commandName.ToUpper();
-            Output.Add(CompileCommand(commandName, parameters));
-        }
-
-        private string ErrorLine()
-        {
-            return string.Format(">>>>> SYNTAX ERROR AT LINE {0}: {1}", CurLine.LineNr, CurLine.Code);
-        }
-
-        private string Quote(string text)
-        {
-            return string.Format("\'{0}\'", text);
-        }
-
         private void AssertParamCount(string[] param, int count)
         {
             if (param == null)
@@ -99,59 +87,6 @@ namespace PTMLCompiler
             if (param.Length != count)
                 throw new CompilerException(string.Format(
                     "Expected {0} args, got {1}", count, param.Length), CurLine);
-        }
-
-        private string CompileCommand(string name, string[] param)
-        {
-            string cmd = null;
-
-            switch (name)
-            {
-                case "DEBUG": cmd = CmdDebug(param); break;
-                case "FN": cmd = CmdFunction(param); break;
-                case FunctionBodyStart: cmd = CmdFunctionBodyStart(); break;
-                case FunctionBodyEnd: cmd = CmdFunctionBodyEnd(); break;
-                case "CALL": cmd = CmdCall(param); break;
-                case "BGCOLOR": cmd = CmdSetBackColor(param); break;
-                case "CLS": cmd = CmdClearScreen(param); break;
-                case "PAL": cmd = CmdSetPalette(param); break;
-                case "CHR": cmd = CmdSetCharset(param); break;
-                case "PUTC": cmd = CmdPutChar(param); break;
-                case "VAR": cmd = CmdSetVar(param); break;
-
-                //default: cmd = ErrorLine(); break;
-                default: throw new CompilerException("Syntax error", CurLine);
-            }
-
-            if (Identation == 1 && cmd != "{")
-                cmd = "\t" + cmd;
-            if (cmd == "}")
-                cmd += Environment.NewLine;
-
-            return cmd;
-        }
-
-        private string CmdSetVar(string[] param)
-        {
-            AssertParamCount(param, 2);
-
-            if (param[0][0] != '$')
-                throw new CompilerException("Variable identifier must start with '$'", CurLine);
-
-            string name = param[0];
-            string value = param[1];
-
-            return string.Format("var {0} = {1}", name, value);
-        }
-
-        private string CmdPutChar(string[] param)
-        {
-            AssertParamCount(param, 5);
-
-            int ch = ParseChar(param[2]);
-
-            return string.Format("Api_PutChar({0}, {1}, {2}, {3}, {4});", 
-                param[0], param[1], ch, param[3], param[4]);
         }
 
         private int ParseChar(string str)
@@ -191,67 +126,6 @@ namespace PTMLCompiler
             int g = ParseNumber(sg);
             int b = ParseNumber(sb);
             return string.Format("0x{0}{1}{2}", r.ToString("x2"), g.ToString("x2"), b.ToString("x2"));
-        }
-
-        private string CmdSetPalette(string[] param)
-        {
-            string ix = param[0];
-            string rgb = "";
-
-            if (param.Length == 2)
-                rgb = param[1];
-            else if (param.Length == 4)
-                rgb = ParseRGB(param[1], param[2], param[3]);
-
-            return string.Format("Api_Palette_Set({0}, {1});", ix, rgb);
-        }
-
-        private string CmdSetCharset(string[] param)
-        {
-            AssertParamCount(param, 3);
-            return string.Format("Api_Charset_Set({0}, {1}, {2});", param[0], param[1], param[2]);
-        }
-
-        private string CmdSetBackColor(string[] param)
-        {
-            AssertParamCount(param, 1);
-            return string.Format("Api_Display_SetBackColor({0});", param[0]);
-        }
-
-        private string CmdClearScreen(string[] param)
-        {
-            AssertParamCount(param, 0);
-            return "Api_Display_ClearBackground();";
-        }
-
-        private string CmdDebug(string[] param)
-        {
-            AssertParamCount(param, 1);
-            return string.Format("Api_Debug({0});", param[0]);
-        }
-
-        private string CmdFunction(string[] param)
-        {
-            AssertParamCount(param, 1);
-            return string.Format("function {0}()", param[0]);
-        }
-
-        private string CmdFunctionBodyStart()
-        {
-            Identation = 1;
-            return FunctionBodyStart;
-        }
-
-        private string CmdFunctionBodyEnd()
-        {
-            Identation = 0;
-            return FunctionBodyEnd;
-        }
-
-        private string CmdCall(string[] param)
-        {
-            AssertParamCount(param, 1);
-            return string.Format("{0}();", param[0]);
         }
     }
 }

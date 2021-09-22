@@ -715,45 +715,80 @@ class GameObject {
 
 /*===========================================================================*/
 
+class ProgramLine {
+    SourceLineNr = 0;
+    ActualLineNr = 0;
+    Command = null;
+    Params = [];
+
+    constructor(srcln, actln, command, params) {
+        this.SourceLineNr = srcln;
+        this.ActualLineNr = actln;
+        this.Command = command;
+        this.Params = params;
+    }
+}
+
+/*===========================================================================*/
+
+class Program {
+    Lines = [];
+    ExecPtr = 0;
+    CurrentLine = null;
+    Running = false;
+
+    Run() {
+        this.Running = true;
+    }
+
+    Stop() {
+        this.Running = false;
+    }
+
+    AddLine(srcln, command, params) {
+        this.Lines.push(new ProgramLine(srcln, this.Lines.length, command, params));
+    }
+}
+
+/*===========================================================================*/
+
 class Machine {
     Running = false;
     Display = null;
+    Program = null;
+    Cycles = 0;
 
     constructor() {
-        Machine.Info('Machine instance created');
+        this.Info('Machine instance created');
         this.Display = new Display(this);
+        this.Program = new Program();
+    }
+
+    Info(msg) {
+        console.info(PTM_LOG_PREFIX + msg);
+    }
+
+    Warning(msg) {
+        console.warn(PTM_LOG_PREFIX + msg);
+    }
+
+    Error(msg) {
+        console.error(PTM_LOG_PREFIX + msg);
     }
 
     Reset() {
         location.reload();
     }
 
-    static Info(obj) {
-        let output = '';
-        if (typeof obj === 'object') {
-            output = JSON.stringify(obj);
-        }
-        else {
-            output = obj.toString();
-        }
-        console.log(PTM_LOG_PREFIX + output);
-    }
-
-    static Error(error) {
-        console.error(PTM_LOG_PREFIX + error);
-    }
-
-    static Warning(msg) {
-        console.warn(PTM_LOG_PREFIX + msg);
-    }
-
     Run() {
         if (this.Running) {
-            Machine.Warning('Main loop is already running');
+            this.Warning('Main loop is already running');
         }
         else {
             this.Running = true;
-            Machine.Info('Main loop started');
+            this.Info('Main loop started');
+            this.Program.Run();
+            setInterval(Sys_Cycle, 500);
 
             try {
                 this.Display.StartRendering();
@@ -767,30 +802,69 @@ class Machine {
     Stop(error) {
         this.Running = false;
         if (error) {
-            Machine.Error('Main loop stopped abnormally due to:\n' + error.message + '\n' + error.stack);
+            this.Error('Main loop stopped abnormally due to:\n' + error.message + '\n' + error.stack);
         }
         else {
-            Machine.Info('Main loop stopped normally');
+            this.Info('Main loop stopped normally');
         }
         this.Display.StopRendering();
+        this.Program.Stop();
     }
 }
 
-/*=======================[ INTERNAL SYSTEM FUNCTIONS ]=======================*/
+/*=======================[ SYSTEM FUNCTIONS ]=======================*/
 
 function Sys_Init() {
     document.body.style.backgroundColor = '#000000';
     window.ptm = new Machine();
     window.display = ptm.Display;
+    window.prg = ptm.Program;
     window.gfx = display.Gfx;
     window.tileset = gfx.Tileset;
     window.palette = gfx.Palette;
+    window.overlay = gfx.Overlay;
+    window.cmd = {};
+    Sys_InitCommandMap();
+}
+
+function Sys_Run() {
+    ptm.Run();
+}
+
+function Sys_Cycle() {
+    if (!prg.Running)
+        return;
+
+    Sys_ExecuteLine(prg.Lines[prg.ExecPtr]);
+
+    ptm.Cycles++;
+    prg.ExecPtr++;
+
+    if (prg.ExecPtr >= prg.Lines.length) {
+        prg.Running = false;
+        Sys_Error('Execution pointer past end of program');
+    }
+}
+
+function Sys_ExecuteLine(line) {
+    const fn = cmd[line.Command];
+    if (fn) {
+        fn();
+    }
+    else {
+        prg.Stop();
+        Sys_Error(`Invalid command at line ${line.SourceLineNr}: ${line.Command}`);
+    }
+}
+
+function Sys_SetOverlay(text, fgc, bgc) {
+    overlay.innerHTML = `<div style="color:${fgc};background:${bgc};width:100%;text-align:center">${text}</span>`;
 }
 
 function Sys_Error(text) {
     const msg = `ERROR: ${text}`;
     console.error(msg);
-    gfx.Overlay.innerHTML = `<span style="color:#f00">${msg}</span>`;
+    Sys_SetOverlay(msg, '#fff', '#f00');
 }
 
 function Sys_AssertPaletteIndex(ixPalette) {
@@ -809,40 +883,50 @@ function Sys_AssertCharsetIndex(ixCharset) {
     return true;
 }
 
-/*==========================[ PUBLIC API ]===================================*/
-
-function Api_Debug(text) {
-    console.log(PTM_LOG_PREFIX + text);
-}
-
-function Api_Palette_Set(ixPalette, rgb) {
+function Sys_Palette_Set(ixPalette, rgb) {
     if (Sys_AssertPaletteIndex(ixPalette)) {
         palette.Colors[ixPalette] = new Color(rgb);
     }
 }
 
-function Api_Display_ClearBackground() {
+function Sys_Display_ClearBackground() {
     display.ClearBackground();
 }
 
-function Api_Display_SetBackColor(ixPalette) {
+function Sys_Display_SetBackColor(ixPalette) {
     if (Sys_AssertPaletteIndex(ixPalette)) {
         display.SetBackgroundColor(ixPalette);
     }
 }
 
-function Api_Charset_Set(ixCharset, pixelRow, byte) {
+function Sys_Charset_Set(ixCharset, pixelRow, byte) {
     if (Sys_AssertCharsetIndex(ixCharset)) {
         tileset.SetRow(ixCharset, pixelRow, byte);
     }
 }
 
-function Api_PutChar(col, row, ixCh, ixPalFg, ixPalBg) {
+function Sys_PutChar(col, row, ixCh, ixPalFg, ixPalBg) {
     if (Sys_AssertCharsetIndex(ixCh) && Sys_AssertPaletteIndex(ixPalFg) && Sys_AssertPaletteIndex(ixPalBg)) {
         gfx.RenderPixelBlock(tileset.Get(ixCh), ixPalFg, ixPalBg, col, row);
     }
 }
 
-/*==========================[ USER CODE ]====================================*/
+function Sys_InitCommandMap() {
+
+    cmd['NOP'] = Cmd_Nop;
+}
+
+/*===========================[ COMMANDS ]====================================*/
+
+function Cmd_Nop() {
+    ptm.Info("NOP executed");
+}
+
+/*===========================[ SYS MAIN ]====================================*/
+
+function Sys_Main() {
 
 [[[COMPILED_JS]]]
+
+    Sys_Run();
+}
