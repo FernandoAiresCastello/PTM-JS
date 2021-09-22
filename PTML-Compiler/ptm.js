@@ -6,13 +6,13 @@
     
 =============================================================================*/
 
-String.prototype.replaceAt = function (index, replacement) {
-    return this.substr(0, index) + replacement + this.substr(index + replacement.length);
-}
+const PTM_LOG_PREFIX = '[PTM] ';
 
 /*===========================================================================*/
 
-const PTM_LOG_PREFIX = 'PTM >> ';
+String.prototype.replaceAt = function (index, replacement) {
+    return this.substr(0, index) + replacement + this.substr(index + replacement.length);
+}
 
 /*===========================================================================*/
 
@@ -756,7 +756,9 @@ class Machine {
     Running = false;
     Display = null;
     Program = null;
+    CycleHandle = null;
     Cycles = 0;
+    Branching = false;
 
     constructor() {
         this.Info('Machine instance created');
@@ -788,7 +790,7 @@ class Machine {
             this.Running = true;
             this.Info('Main loop started');
             this.Program.Run();
-            setInterval(Sys_Cycle, 500);
+            this.Cycle();
 
             try {
                 this.Display.StartRendering();
@@ -797,6 +799,33 @@ class Machine {
                 this.Stop(error);
             }
         }
+    }
+
+    Cycle() {
+        if (!this.Program.Running) {
+            window.cancelAnimationFrame(this.CycleHandle);
+            return;
+        }
+
+        this.Cycles++;
+        Sys_ExecuteLine(this.Program.Lines[this.Program.ExecPtr]);
+
+        if (this.Branching)
+            this.Branching = false;
+        else
+            this.Program.ExecPtr++;
+
+        if (this.Program.ExecPtr >= this.Program.Lines.length) {
+            this.Program.Running = false;
+            Sys_Error('Execution pointer past end of program');
+        }
+
+        this.Program.CycleHandle = window.requestAnimationFrame(() => this.Cycle());
+    }
+
+    RestartProgram() {
+        this.Program.ExecPtr = 0;
+        this.Branching = true;
     }
 
     Stop(error) {
@@ -831,25 +860,10 @@ function Sys_Run() {
     ptm.Run();
 }
 
-function Sys_Cycle() {
-    if (!prg.Running)
-        return;
-
-    Sys_ExecuteLine(prg.Lines[prg.ExecPtr]);
-
-    ptm.Cycles++;
-    prg.ExecPtr++;
-
-    if (prg.ExecPtr >= prg.Lines.length) {
-        prg.Running = false;
-        Sys_Error('Execution pointer past end of program');
-    }
-}
-
 function Sys_ExecuteLine(line) {
     const fn = cmd[line.Command];
     if (fn) {
-        fn();
+        fn(line.Params);
     }
     else {
         prg.Stop();
@@ -911,15 +925,27 @@ function Sys_PutChar(col, row, ixCh, ixPalFg, ixPalBg) {
     }
 }
 
-function Sys_InitCommandMap() {
-
-    cmd['NOP'] = Cmd_Nop;
-}
-
 /*===========================[ COMMANDS ]====================================*/
 
-function Cmd_Nop() {
-    ptm.Info("NOP executed");
+function Sys_InitCommandMap() {
+
+    cmd['TEST'] = function (params) {
+        ptm.Info("This is a test. Params = " + params);
+    }
+    cmd['NOP'] = function (params) {
+        ptm.Info("NOP executed");
+    }
+    cmd['HALT'] = function (params) {
+        prg.Stop();
+        ptm.Info("Program halted");
+    }
+    cmd['RESET'] = function (params) {
+        ptm.RestartProgram();
+        ptm.Info("Program restarted");
+    }
+    cmd['DEBUG'] = function (params) {
+        Sys_SetOverlay(window.ptm.Cycles, '#fff', '#000');
+    }
 }
 
 /*===========================[ SYS MAIN ]====================================*/
