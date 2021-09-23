@@ -5,8 +5,8 @@
     <meta charset='UTF-8'>
     <script>
 
-    document.addEventListener('DOMContentLoaded', Sys_Init, false);
-    document.addEventListener('DOMContentLoaded', Sys_Main, false);
+    document.addEventListener('DOMContentLoaded', Init, false);
+    document.addEventListener('DOMContentLoaded', Main, false);
 
 [[[COMPILED_JS]]]
     </script>
@@ -38,8 +38,7 @@
 </head>
 <body>
     <table>
-        <tr><td><div id='title-panel'></div></td></tr>
-        <tr><td><canvas width='0' height='0'></canvas></td></tr>
+        <tr><td><canvas id='canvas' width='0' height='0'></canvas></td></tr>
         <tr><td><div id='debug-panel'></div></td></tr>
     </table>
 </body>

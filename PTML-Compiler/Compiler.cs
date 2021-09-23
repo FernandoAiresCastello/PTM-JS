@@ -63,7 +63,7 @@ namespace PTMLCompiler
 
                 if (cmd.EndsWith(":"))
                 {
-                    Output.Add(string.Format("\tprg.AddLabel('{0}', prg.Lines.length);", 
+                    Output.Add(string.Format("\tAddPrgLabel('{0}', PrgLines.length);", 
                         cmd.Substring(0, cmd.Length - 1)));
                 }
                 else
@@ -73,8 +73,8 @@ namespace PTMLCompiler
 
                     string paramList = string.Join(", ", param);
 
-                    Output.Add(string.Format("\tprg.AddLine({0}, '{1}', [{2}]);",
-                        CurLine.LineNr, cmd, paramList));
+                    Output.Add(string.Format("\tAddPrgLine({0}, '{1}', [{2}]);",
+                        CurLine.LineNr, cmd.ToUpper(), paramList));
                 }
             }
 
