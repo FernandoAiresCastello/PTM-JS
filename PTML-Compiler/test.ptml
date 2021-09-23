@@ -1,0 +1,11 @@
+Main:
+    LOG "Hello World!"
+	
+Loop:
+	CLS #f00
+    DRAW
+	CLS #0f0
+	DRAW
+	CLS #00f
+	DRAW
+    GOTO Loop

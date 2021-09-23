@@ -8,7 +8,7 @@ namespace PTMLCompiler
         [STAThread]
         static void Main(string[] args)
         {
-            Console.WriteLine("*** PTML Compiler ***");
+            Console.WriteLine("*** PTML Compiler - v0.1 ***");
 
             if (args.Length > 0)
             {

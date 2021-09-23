@@ -1,45 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PTM</title>
+    <meta charset='UTF-8'>
+    <script>
+
+    document.addEventListener('DOMContentLoaded', Init, false);
+    document.addEventListener('DOMContentLoaded', Main, false);
+
 /*=============================================================================
 
         PTM - Programmable Tile Machine
         2021 developed by Fernando Aires Castello
-        https://github.com/FernandoAiresCastello/PTM-JS
+        https://github.com/FernandoAiresCastello
     
-/*=============================================================================
-    DATA
 =============================================================================*/
-// PTML interpreter
-    let Cmd = {};
-    let PrgLines = [];
-    let PrgLabels = {};
-    let ExecPtr = 0;
-    let Running = false;
-    let CycleHandle = null;
-    let Cycles = 0;
-    let Branching = false;
-    let PauseCycles = 0;
-// Debugging
-    let DebugPanel = null;
-// Low-level graphic objects 
-    let Canvas = null;
-    let PixelBuffer = [];
-// Low-level graphic constants 
-    const TileWidth = 8;
-    const TileHeight = 8;
-    const ScreenWidth = 160;
-    const ScreenHeight = 144;
-    const ScreenZoom = 3;
-    const CanvasWidth = ScreenZoom * ScreenWidth;
-    const CanvasHeight = ScreenZoom * ScreenHeight;
-    const Cols = ScreenWidth / TileWidth;
-    const Rows = ScreenHeight / TileHeight;
-    const GridTileWidth = CanvasWidth / Cols;
-    const GridTileHeight = CanvasHeight / Rows;
-    const PixelWidth = GridTileWidth / TileWidth;
-    const PixelHeight = GridTileHeight / TileHeight;
 
-/*=============================================================================
-    FUNCTIONS
-=============================================================================*/
+let Cmd = {};
+let PrgLines = [];
+let PrgLabels = {};
+let ExecPtr = 0;
+let TileWidth = 8;
+let TileHeight = 8;
+let Canvas = null;
+let ScreenWidth = 160;
+let ScreenHeight = 144;
+let ScreenZoom = 3;
+let CanvasWidth = ScreenZoom * ScreenWidth;
+let CanvasHeight = ScreenZoom * ScreenHeight;
+let Cols = ScreenWidth / TileWidth;
+let Rows = ScreenHeight / TileHeight;
+let GridTileWidth = CanvasWidth / Cols;
+let GridTileHeight = CanvasHeight / Rows;
+let PixelWidth = GridTileWidth / TileWidth;
+let PixelHeight = GridTileHeight / TileHeight;
+let PixelBuffer = [];
+let Running = false;
+let CycleHandle = null;
+let Cycles = 0;
+let Branching = false;
+let DebugPanel = null;
+let PauseCycles = 0;
+
 function InitCommands() {
 
     Cmd['NOP'] = (p) => {
@@ -48,7 +50,8 @@ function InitCommands() {
         Log(p[0]);
     }
     Cmd['HALT'] = (p) => {
-        Halt();
+        Running = false;
+        Log("Machine halted");
     }
     Cmd['PAUSE'] = (p) => {
         PauseCycles = ToNumber(p[0]);
@@ -65,11 +68,6 @@ function InitCommands() {
     Cmd['GOTO'] = (p) => {
         Branch(p[0]);
     }
-}
-
-function Halt() {
-    Running = false;
-    Log("Machine halted");
 }
 
 function Branch(idLabel) {
@@ -163,6 +161,9 @@ function StartCycleLoop() {
 }
 
 function Cycle() {
+
+    SetDebugMsg('Cycles: ' + Cycles);
+
     if (Running) {
         if (PauseCycles > 0) {
             PauseCycles--;
@@ -209,7 +210,47 @@ function Init() {
 }
 
 function Main() {
-[[[COMPILED_JS]]]
+	AddPrgLabel('Main', PrgLines.length);
+	AddPrgLine(2, 'LOG', ['Hello World!']);
+	AddPrgLabel('Loop', PrgLines.length);
+	AddPrgLine(5, 'CLS', ['#f00']);
+	AddPrgLine(6, 'DRAW', []);
+	AddPrgLine(7, 'CLS', ['#0f0']);
+	AddPrgLine(8, 'DRAW', []);
+	AddPrgLine(9, 'CLS', ['#00f']);
+	AddPrgLine(10, 'DRAW', []);
+	AddPrgLine(11, 'GOTO', ['Loop']);
 
     StartCycleLoop();
 }
+
+    </script>
+    <style>
+        body {
+            background: #000;
+            color: #fff;
+            font-family: Consolas, monospace;
+            font-size: 12px;
+        }
+        table {
+            border: 0;
+            border-collapse: collapse;
+            padding: 0;
+            margin: auto;
+        }
+        canvas {
+            border: 1px solid #333;
+        }
+        #debug-panel {
+            border: 0;
+            padding: 0 5px;
+        }
+    </style>
+</head>
+<body>
+    <table>
+        <tr><td><canvas id='canvas' width='0' height='0'></canvas></td></tr>
+        <tr><td><div id='debug-panel'></div></td></tr>
+    </table>
+</body>
+</html>
