@@ -1,7 +1,7 @@
 
-export class Error {
+export class ErrorScreen {
 
-    static Show(message: string) {
+    static show(message: string) {
         message = `[PTM] ${message}`;
         console.error(message);
         message = message.replace(/\</g,"&lt;").replace(/\>/g,"&gt;")
