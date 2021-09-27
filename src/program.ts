@@ -1,16 +1,20 @@
 import { ErrorScreen } from "./errorScreen";
+import { ProgramLabels } from "./programLabels";
 import { ProgramLine } from "./programLine";
 
 export class Program {
 
     lines: ProgramLine[] = [];
+    labels: ProgramLabels = new ProgramLabels();
 
-    load() {
+    load(): boolean {
         const element = document.querySelectorAll('script[type="ptml"]');
         if (element && element.length) {
             this.parse(element[0].innerHTML.trim());
+            return true;
         } else {
             ErrorScreen.show('Required tag <script type="ptml"> not found');
+            return false;
         }
     }
 
@@ -18,11 +22,18 @@ export class Program {
         const rawLines = srcCode.split('\n');
         rawLines.forEach(rawLine => {
             rawLine = rawLine.trim();
-            if (rawLine && rawLine[0] != ';') {
-                this.lines.push(this.parseLine(rawLine));
+            if (rawLine) {
+                const isComment = rawLine[0] == ';';
+                const isLabel = rawLine[rawLine.length - 1] == ':';
+                if (isComment) {
+                    // ignore comment
+                } else if (isLabel) {
+                    this.labels[rawLine] = this.lines.length;
+                } else {
+                    this.lines.push(this.parseLine(rawLine));
+                }
             }
         });
-        console.log(this.lines);
     }
 
     private parseLine(srcLine: string): ProgramLine {

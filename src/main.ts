@@ -1,9 +1,8 @@
-import { Program } from "./program";
+import { Machine } from "./machine";
 
 document.addEventListener('DOMContentLoaded', function () {
-    
-    const program = new Program();
-    program.load();
-    
+
+    const machine = new Machine();
+    machine.run();
 }, 
 false);
