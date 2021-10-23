@@ -13,6 +13,7 @@ exports.CommandMap = CommandMap;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Display = void 0;
+var palette_1 = require("./palette");
 var Display = /** @class */ (function () {
     function Display() {
         this.width = 0;
@@ -27,6 +28,8 @@ var Display = /** @class */ (function () {
         this.canvas = null;
         this.pixelBuf = [];
         this.imageData = new ImageData(1, 1);
+        this.palette = new palette_1.Palette();
+        this.backColor = 0;
     }
     Display.prototype.init = function (width, height, zoom) {
         this.zoom = zoom;
@@ -48,6 +51,7 @@ var Display = /** @class */ (function () {
             this.canvas.imageSmoothingQuality = 'low';
             this.clearPixelBuffer(0x000000);
             this.update();
+            this.palette.initDefault();
         }
     };
     Display.prototype.update = function () {
@@ -75,18 +79,27 @@ var Display = /** @class */ (function () {
     Display.prototype.clearPixelBuffer = function (rgb) {
         for (var y = 0; y < this.height; y++) {
             for (var x = 0; x < this.width; x++) {
-                this.putPixel(x, y, rgb);
+                this.putPixelRgb(x, y, rgb);
             }
         }
     };
-    Display.prototype.putPixel = function (x, y, rgb) {
+    Display.prototype.putPixelRgb = function (x, y, rgb) {
         this.pixelBuf[y * this.width + x] = rgb;
+    };
+    Display.prototype.putPixelIndexed = function (x, y, ix) {
+        this.pixelBuf[y * this.width + x] = this.palette.get(ix);
+    };
+    Display.prototype.setBackColor = function (ix) {
+        this.backColor = ix;
+    };
+    Display.prototype.clearToBackColor = function () {
+        this.clearPixelBuffer(this.palette.get(this.backColor));
     };
     return Display;
 }());
 exports.Display = Display;
 
-},{}],3:[function(require,module,exports){
+},{"./palette":6}],3:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ErrorScreen = void 0;
@@ -124,6 +137,8 @@ var Machine = /** @class */ (function () {
         this.cmd = new commandMap_1.CommandMap();
         this.halted = false;
         this.scr = new display_1.Display();
+        this.branching = false;
+        this.pauseTime = 0;
         this.prog = new program_1.Program();
         this.initCommandMap();
     }
@@ -146,12 +161,22 @@ var Machine = /** @class */ (function () {
         if (this.halted) {
             return;
         }
-        this.executeLine();
-        this.cycles++;
-        this.lineNr++;
-        if (this.lineNr >= this.prog.lines.length && this.halted == false) {
-            this.abort('Execution pointer past end of program');
-            return;
+        if (this.pauseTime > 0) {
+            this.pauseTime--;
+        }
+        else {
+            this.executeLine();
+            this.cycles++;
+            if (this.branching) {
+                this.branching = false;
+            }
+            else {
+                this.lineNr++;
+            }
+            if (this.lineNr >= this.prog.lines.length && this.halted == false) {
+                this.abort('Execution pointer past end of program');
+                return;
+            }
         }
         this.cycleHandle = window.requestAnimationFrame(function () { return _this.cycle(); });
     };
@@ -168,10 +193,18 @@ var Machine = /** @class */ (function () {
     };
     Machine.prototype.abort = function (message) {
         errorScreen_1.ErrorScreen.show(message);
+        this.log('Machine aborted');
         this.running = false;
     };
     Machine.prototype.log = function (message) {
         console.log('PTM >> ' + message);
+    };
+    Machine.prototype.branchTo = function (lineNr) {
+        this.lineNr = lineNr;
+        this.branching = true;
+    };
+    Machine.prototype.unquote = function (str) {
+        return str.substring(1, str.length - 2);
     };
     // ========== Commands ==========
     Machine.prototype.initCommandMap = function () {
@@ -179,14 +212,43 @@ var Machine = /** @class */ (function () {
         this.cmd['NOP'] = function () { return _this.cmdNop(); };
         this.cmd['HALT'] = function () { return _this.cmdHalt(); };
         this.cmd['SCREEN'] = function () { return _this.cmdScreen(); };
-        this.cmd['PSET'] = function () { return _this.cmdPutPixel(); };
+        this.cmd['BGCOLOR'] = function () { return _this.cmdSetBackColor(); };
+        this.cmd['CLS'] = function () { return _this.cmdClearScreen(); };
         this.cmd['DRAW'] = function () { return _this.cmdUpdateScreen(); };
+        this.cmd['GOTO'] = function () { return _this.cmdGoto(); };
+        this.cmd['LOG'] = function () { return _this.cmdLog(); };
+        this.cmd['PAUSE'] = function () { return _this.cmdPause(); };
+    };
+    Machine.prototype.cmdPause = function () {
+        this.pauseTime = Number(this.args[0]);
+    };
+    Machine.prototype.cmdLog = function () {
+        this.log(this.unquote(this.args[0]));
+    };
+    Machine.prototype.cmdGoto = function () {
+        var dest = this.prog.labels[this.args[0]];
+        if (dest) {
+            this.branchTo(dest);
+        }
+        else {
+            debugger;
+            this.abort('Undefined label: ' + this.args[0]);
+        }
+    };
+    Machine.prototype.cmdClearScreen = function () {
+        this.scr.clearToBackColor();
+    };
+    Machine.prototype.cmdSetBackColor = function () {
+        var ix = Number(this.args[0]);
+        if (ix >= 0 && ix < this.scr.palette.colors.length) {
+            this.scr.setBackColor(ix);
+        }
+        else {
+            this.abort('Palette index out of range');
+        }
     };
     Machine.prototype.cmdUpdateScreen = function () {
         this.scr.update();
-    };
-    Machine.prototype.cmdPutPixel = function () {
-        this.scr.putPixel(Number(this.args[0]), Number(this.args[1]), Number(this.args[2]));
     };
     Machine.prototype.cmdScreen = function () {
         this.scr.init(Number(this.args[0]), Number(this.args[1]), Number(this.args[2]));
@@ -202,7 +264,7 @@ var Machine = /** @class */ (function () {
 }());
 exports.Machine = Machine;
 
-},{"./commandMap":1,"./display":2,"./errorScreen":3,"./program":6}],5:[function(require,module,exports){
+},{"./commandMap":1,"./display":2,"./errorScreen":3,"./program":7}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var machine_1 = require("./machine");
@@ -212,6 +274,42 @@ document.addEventListener('DOMContentLoaded', function () {
 }, false);
 
 },{"./machine":4}],6:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Palette = void 0;
+var Palette = /** @class */ (function () {
+    function Palette() {
+        this.colors = [];
+    }
+    Palette.prototype.add = function (rgb) {
+        this.colors.push(rgb);
+    };
+    Palette.prototype.set = function (ix, rgb) {
+        this.colors[ix] = rgb;
+    };
+    Palette.prototype.get = function (ix) {
+        if (ix >= 0 && ix < this.colors.length) {
+            return this.colors[ix];
+        }
+        return 0;
+    };
+    Palette.prototype.initDefault = function () {
+        this.add(0x000000);
+        this.add(0xffffff);
+        this.add(0xff0000);
+        this.add(0x00ff00);
+        this.add(0x0000ff);
+        this.add(0xff00ff);
+        this.add(0x00ffff);
+        this.add(0xffff00);
+        this.add(0xff8000);
+        this.add(0x808080);
+    };
+    return Palette;
+}());
+exports.Palette = Palette;
+
+},{}],7:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Program = void 0;
@@ -246,7 +344,8 @@ var Program = /** @class */ (function () {
                     // ignore comment
                 }
                 else if (isLabel) {
-                    _this.labels[rawLine] = _this.lines.length;
+                    var label = rawLine.substring(0, rawLine.length - 1);
+                    _this.labels[label] = _this.lines.length;
                 }
                 else {
                     _this.lines.push(_this.parseLine(rawLine));
@@ -282,7 +381,7 @@ var Program = /** @class */ (function () {
 exports.Program = Program;
 ;
 
-},{"./errorScreen":3,"./programLabels":7,"./programLine":8}],7:[function(require,module,exports){
+},{"./errorScreen":3,"./programLabels":8,"./programLine":9}],8:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProgramLabels = void 0;
@@ -293,7 +392,7 @@ var ProgramLabels = /** @class */ (function () {
 }());
 exports.ProgramLabels = ProgramLabels;
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProgramLine = void 0;

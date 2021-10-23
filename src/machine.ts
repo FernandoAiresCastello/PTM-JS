@@ -15,6 +15,8 @@ export class Machine {
     cmd: CommandMap = new CommandMap();
     halted: boolean = false;
     scr: Display = new Display();
+    branching: boolean = false;
+    pauseTime: number = 0;
 
     constructor() {
         this.prog = new Program();
@@ -40,13 +42,24 @@ export class Machine {
         if (this.halted) {
             return;
         }
-        this.executeLine();
-        this.cycles++;
-        this.lineNr++;
-        if (this.lineNr >= this.prog.lines.length && this.halted == false) {
-            this.abort('Execution pointer past end of program');
-            return;
+        if (this.pauseTime > 0) {
+            this.pauseTime--;
+        } else {
+            this.executeLine();
+            this.cycles++;
+
+            if (this.branching) {
+                this.branching = false;
+            } else {
+                this.lineNr++;
+            }
+    
+            if (this.lineNr >= this.prog.lines.length && this.halted == false) {
+                this.abort('Execution pointer past end of program');
+                return;
+            }
         }
+        
         this.cycleHandle = window.requestAnimationFrame(() => this.cycle());
     }
 
@@ -63,11 +76,21 @@ export class Machine {
 
     abort(message: string) {
         ErrorScreen.show(message);
+        this.log('Machine aborted');
         this.running = false;
     }
 
     log(message: string) {
         console.log('PTM >> ' + message);
+    }
+
+    branchTo(lineNr: number) {
+        this.lineNr = lineNr;
+        this.branching = true;
+    }
+
+    unquote(str: string) {
+        return str.substring(1, str.length - 2);
     }
 
     // ========== Commands ==========
@@ -76,21 +99,49 @@ export class Machine {
         this.cmd['NOP'] = ()=> this.cmdNop();
         this.cmd['HALT'] = ()=> this.cmdHalt();
         this.cmd['SCREEN'] = ()=> this.cmdScreen();
-        this.cmd['PSET'] = ()=> this.cmdPutPixel();
+        this.cmd['BGCOLOR'] = ()=> this.cmdSetBackColor();
+        this.cmd['CLS'] = ()=> this.cmdClearScreen();
         this.cmd['DRAW'] = ()=> this.cmdUpdateScreen();
+        this.cmd['GOTO'] = ()=> this.cmdGoto();
+        this.cmd['LOG'] = ()=> this.cmdLog();
+        this.cmd['PAUSE'] = ()=> this.cmdPause();
+    }
+
+    cmdPause() {
+        this.pauseTime = Number(this.args[0]);
+    }
+
+    cmdLog() {
+        this.log(this.unquote(this.args[0]));
+    }
+
+    cmdGoto() {
+        const dest = this.prog.labels[this.args[0]];
+        if (dest) {
+            this.branchTo(dest);
+        } else {
+            debugger;
+            this.abort('Undefined label: ' + this.args[0]);
+        }
+    }
+
+    cmdClearScreen() {
+        this.scr.clearToBackColor();
+    }
+
+    cmdSetBackColor() {
+        const ix = Number(this.args[0]);
+        if (ix >= 0 && ix < this.scr.palette.colors.length) {
+            this.scr.setBackColor(ix);
+        } else {
+            this.abort('Palette index out of range');            
+        }
     }
 
     cmdUpdateScreen() {
         this.scr.update();
     }
 
-    cmdPutPixel() {
-        this.scr.putPixel(
-            Number(this.args[0]),
-            Number(this.args[1]),
-            Number(this.args[2]));
-    }
-    
     cmdScreen() {
         this.scr.init(
             Number(this.args[0]),

@@ -1,3 +1,4 @@
+import { IxPalette, Palette } from "./palette";
 
 export class Display {
 
@@ -13,6 +14,8 @@ export class Display {
     canvas: (CanvasRenderingContext2D | null) = null;
     pixelBuf: number[] = [];
     imageData: ImageData = new ImageData(1, 1);
+    palette: Palette = new Palette();
+    backColor: IxPalette = 0;
 
     init(width: number, height: number, zoom: number) {
         this.zoom = zoom;
@@ -36,6 +39,7 @@ export class Display {
             this.canvas.imageSmoothingQuality = 'low';
             this.clearPixelBuffer(0x000000);
             this.update();
+            this.palette.initDefault();
         }
     }
 
@@ -65,15 +69,24 @@ export class Display {
     private clearPixelBuffer(rgb: number) {
         for (let y = 0; y < this.height; y++) {
             for (let x = 0; x < this.width; x++) {
-                this.putPixel(x, y, rgb);
+                this.putPixelRgb(x, y, rgb);
             }
         }
     }
 
-    putPixel(x: number, y: number, rgb: number) {
+    private putPixelRgb(x: number, y: number, rgb: number) {
         this.pixelBuf[y * this.width + x] = rgb;
     }
 
-    putPixelTile(x: number, y: number, rgb: number) {
+    private putPixelIndexed(x: number, y: number, ix: IxPalette) {
+        this.pixelBuf[y * this.width + x] = this.palette.get(ix);
+    }
+
+    setBackColor(ix: IxPalette) {
+        this.backColor = ix;
+    }
+
+    clearToBackColor() {
+        this.clearPixelBuffer(this.palette.get(this.backColor));
     }
 }

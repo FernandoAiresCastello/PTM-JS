@@ -28,7 +28,8 @@ export class Program {
                 if (isComment) {
                     // ignore comment
                 } else if (isLabel) {
-                    this.labels[rawLine] = this.lines.length;
+                    const label = rawLine.substring(0, rawLine.length - 1);
+                    this.labels[label] = this.lines.length;
                 } else {
                     this.lines.push(this.parseLine(rawLine));
                 }
